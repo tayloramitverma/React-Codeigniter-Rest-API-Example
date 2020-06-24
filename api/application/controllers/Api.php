@@ -36,12 +36,32 @@ class Api extends RestController {
     function contact_post()
     {
 
+        $image = '';
+
+        if(!empty($_FILES['image']['name']) && isset($_FILES['image']['name'])) {
+            $config['upload_path'] = './assets/images/';
+            $config['overwrite'] = true;
+            $config['allowed_types'] = 'jpg|png|jpeg';
+            $config['file_name'] = 'image-'.md5(time());
+
+            $this->load->library('upload', $config);
+            $this->upload->initialize($config);
+            if ($this->upload->do_upload('image')) {
+                         
+                $uploadedImage = $this->upload->data();
+                $image_name = $uploadedImage['file_name'];
+                        
+                $image = base_url().'assets/images/'.$image_name;
+            }
+        }
+
         $result = array(
             'name' => $this->post('name'),
             'email' => $this->post('email'),
-            'phone' => $this->post('phone')
+            'phone' => $this->post('phone'),
+            'image' => $image
         );
-
+        
         $result = $this->api_model->storeContact($result);
 
          if($result){
@@ -55,21 +75,42 @@ class Api extends RestController {
     function updatecontact_post()
     {
 
-        $result = array(
+        $image = '';
+
+        if(!empty($_FILES['image']['name']) && isset($_FILES['image']['name'])) {
+            $config['upload_path'] = './assets/images/';
+            $config['overwrite'] = true;
+            $config['allowed_types'] = 'jpg|png|jpeg';
+            $config['file_name'] = 'image-'.md5(time());
+
+            $this->load->library('upload', $config);
+            $this->upload->initialize($config);
+            if ($this->upload->do_upload('image')) {
+                         
+                $uploadedImage = $this->upload->data();
+                $image_name = $uploadedImage['file_name'];
+                        
+                $image = base_url().'assets/images/'.$image_name;
+            }
+        }
+
+        $dataArr = array(
             'name' => $this->post('name'),
             'email' => $this->post('email'),
-            'phone' => $this->post('phone')
+            'phone' => $this->post('phone'),
+            'image' => $image
         );
 
-        $id = $this->post('contactid');
+        
+        $id = $this->post('id');
 
-        $result = $this->api_model->updateContact($result, $id);
+        $result = $this->api_model->updateContact($dataArr, $id);
 
-         if($result){
+        if($result){
             $this->response(array('status' =>true), 200);
-         }else{
+        }else{
             $this->response(array('status' =>false), 200);
-         }
+        }
 
     }
 

@@ -28,24 +28,28 @@ export default class ContactForm extends Component {
     
 
     submitForm = () => {
-        const {name, email, phone} = this.state;
+        const {name, email, phone, image} = this.state;
 
-        if(name && email && phone) {
+        if(name && email && phone && image) {
 
-            let contactInfo = {
-                name: name,
-                email: email,
-                phone: phone
-            }
+            const formData = new FormData();
 
-            console.log(contactInfo)
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('phone', phone);
+            formData.append('image', image);
 
-            fetch('http://localhost/amit/contact/api/api/contact', {
+            // let contactInfo = {
+            //     name: name,
+            //     email: email,
+            //     phone: phone
+            // }
+
+            //console.log(contactInfo)
+
+            fetch('http://localhost/projects/react-php-curd/api/api/contact', {
                 method: 'POST',
-                body: JSON.stringify(contactInfo),
-                headers: {
-                  'Content-Type': 'application/json'
-                }
+                body: formData
             })
             .then(res=> res.json())
             .then(fres=>{
@@ -55,7 +59,8 @@ export default class ContactForm extends Component {
                     this.setState({
                         name:'',
                         email:'',
-                        phone:''
+                        phone:'',
+                        image:''
                     })
                 }
             }).catch(err =>{
@@ -77,7 +82,7 @@ export default class ContactForm extends Component {
             'id' : id
         }
 
-        fetch('http://localhost/amit/contact/api/api/contactdelete', {
+        fetch('http://localhost/projects/react-php-curd/api/api/contactdelete', {
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: {
@@ -99,8 +104,9 @@ export default class ContactForm extends Component {
 
         this.setState({
             name : data.name,
-            email:data.email,
-            phone:data.phone,
+            email: data.email,
+            phone: data.phone,
+            image: data.image,
             editid: id
         })
 
@@ -108,25 +114,22 @@ export default class ContactForm extends Component {
 
     updateRecord = (id) => {
 
-        const {name, email, phone} = this.state;
+        const {name, email, phone, image} = this.state;
 
-        if(name && email && phone) {
+        if(name && email && phone && image) {
 
-            let contactInfo = {
-                name: name,
-                email: email,
-                phone: phone,
-                contactid: id
-            }
+            const formData = new FormData();
 
-            console.log(contactInfo)
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('phone', phone);
+            formData.append('image', image);
 
-            fetch('http://localhost/amit/contact/api/api/updatecontact', {
+            formData.append('id', id);
+
+            fetch('http://localhost/projects/react-php-curd/api/api/updatecontact', {
                 method: 'POST',
-                body: JSON.stringify(contactInfo),
-                headers: {
-                  'Content-Type': 'application/json'
-                }
+                body: formData
             })
             .then(res=> res.json())
             .then(fres=>{
@@ -137,6 +140,7 @@ export default class ContactForm extends Component {
                         name:'',
                         email:'',
                         phone:'',
+                        image:'',
                         editid:0
                     })
                 }
@@ -149,9 +153,14 @@ export default class ContactForm extends Component {
 
     }
 
+    updatePhoto = (image)=>{
+        console.log(image)
+        this.setState({image})
+    }
+
     getContacts = () => {
 
-        fetch('http://localhost/amit/contact/api/api/contacts')
+        fetch('http://localhost/projects/react-php-curd/api/api/contacts')
         .then(res=> res.json())
         .then(fres=>{
             this.setState({
@@ -254,22 +263,7 @@ export default class ContactForm extends Component {
 
                     <FormGroup>
                         <Label for="exampleImage">Image</Label>
-                        <Textbox
-                            attributesInput={{
-                                id: "image",
-                                type: "file"
-                            }}
-                            value={this.state.image}
-                            onChange={(image, e) => {
-                                this.setState({ image });
-                            }}
-                            onBlur={e => {}}
-                            validationOption={{
-                                name: "image",
-                                check: true,
-                                required: true
-                            }}
-                            />
+                        <input type="file" onChange={(e)=>this.updatePhoto(e.target.files[0])} />
                     </FormGroup>
 
                     {this.state.editid === 0 &&
@@ -290,6 +284,7 @@ export default class ContactForm extends Component {
                                         <tr>
                                         <th>#</th>
                                         <th>Name</th>
+                                        <th>Image</th>
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Action</th>
@@ -298,10 +293,15 @@ export default class ContactForm extends Component {
                                     <tbody>
                                         {
                                             this.state.contacts.map((item, index)=>{
+                                                let image_is = require('./placeholder.jpg');
+                                                if(item.image){
+                                                     image_is = item.image;
+                                                }
                                                 return (
                                                     <tr key={index}>
                                                         <td>{index+1}</td>
                                                         <td>{item.name}</td>
+                                                        <td><img src={image_is} alt={item.name} style={{width:'100px'}} /></td>
                                                         <td>{item.email}</td>
                                                         <td>{item.mobile}</td>
                                                         <td><span onClick={()=>this.removeMe(item.id)}>Delete</span> | 
